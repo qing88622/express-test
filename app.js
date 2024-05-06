@@ -1,18 +1,19 @@
 const fs = require('fs')
-
-const port = 3000
-
 const express = require('express')
-const { allowedNodeEnvironmentFlags } = require('process')
+const morgan = require('morgan')
 
 const app = express()
 
+// 1) Middleware
 //將Express應用程式設置為使用內建的JSON中介軟體，以便解析傳入請求中的JSON主體。
 //當在Express路由中處理POST、PUT或PATCH請求時，可以方便地存取和操作請求中的JSON資料。
+
+app.use(morgan('dev'))
+
 app.use(express.json())
 
 app.use((req,res,next)=>{
-    console.log('hello middleware~')
+    // console.log('hello middleware~')
     next()
 })
 
@@ -25,7 +26,7 @@ app.use((req,res,next)=>{
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`))
 
 const getAllTours = (req, res) => {
-    console.log(req.requestTime)
+    // console.log(req.requestTime)
     res.status(200).json({
         status: 'success',
         results: tours.length,
@@ -33,8 +34,11 @@ const getAllTours = (req, res) => {
     })
 }
 
+
+// 2) Route handlers
+
 const getTour = (req, res) => {
-    console.log(req.params)
+    // console.log(req.params)
 
     const id = req.params.id * 1 //轉字串
     const tour = tours.find(el => el.id === id)
@@ -85,7 +89,7 @@ const deleteTour = (req, res) => {
 // app.patch('/api/v1/tours/:id', updateTour)
 // app.delete('/api/v1/tours/:id', deleteTour)
 
-//優化寫法
+// 3) Routes (優化寫法)
 app
     .route('/api/v1/tours')
     .get(getAllTours)
@@ -97,6 +101,9 @@ app
     .patch(updateTour)   
     .delete(deleteTour)  
 
+
+// 4) Start server
+const port = 3000
 app.listen(port, () => {
     console.log(`App run on port ${port}`, (req, res) => {
         res.status(200).json({
